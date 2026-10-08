@@ -1,18 +1,16 @@
-[gd_scene format=4]
+[gd_scene format=4 uid="uid://pv53wo3yw7fy"]
 
-[ext_resource type="TileSet" path="res://shared/tileset/nav_tileset.tres" id="1_w5dlf"]
-[ext_resource type="TileSet" path="res://shared/tileset/room.tres" id="2_s1cmn"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/7_Art_48x48.png" id="3_rbi4i"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/22_Museum_48x48.png" id="4_0f4uk"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/4_Bedroom_48x48.png" id="5_ynowu"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/5_Classroom_and_library_48x48.png" id="6_qlrfe"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/2_LivingRoom_48x48.png" id="7_m7ddf"]
-[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/9_Fishing_48x48.png" id="8_fyr22"]
-[ext_resource type="PackedScene" path="res://shared/npc/npc.tscn" id="9_bkt6m"]
-[ext_resource type="Script" path="res://shared/npc/npc.gd" id="10_74tvt"]
-[ext_resource type="Texture2D" path="res://entries/pond_room/char/sheet.png" id="11_hlm43"]
+[ext_resource type="TileSet" uid="uid://cgryq4oxcic7y" path="res://shared/tileset/nav_tileset.tres" id="1_w5dlf"]
+[ext_resource type="TileSet" uid="uid://c70qd876y5o3o" path="res://shared/tileset/room.tres" id="2_s1cmn"]
+[ext_resource type="Texture2D" uid="uid://btkraansht6u2" path="res://shared/tileset/textures/furnitures/7_Art_48x48.png" id="3_rbi4i"]
+[ext_resource type="Texture2D" uid="uid://uji3pmwikjkc" path="res://shared/tileset/textures/furnitures/22_Museum_48x48.png" id="4_0f4uk"]
+[ext_resource type="Texture2D" uid="uid://cmm4svlojp7ng" path="res://shared/tileset/textures/furnitures/4_Bedroom_48x48.png" id="5_ynowu"]
+[ext_resource type="Texture2D" uid="uid://bt358xjc3mwdb" path="res://shared/tileset/textures/furnitures/5_Classroom_and_library_48x48.png" id="6_qlrfe"]
+[ext_resource type="Texture2D" uid="uid://bs4n7wfpcbwqc" path="res://shared/tileset/textures/furnitures/2_LivingRoom_48x48.png" id="7_m7ddf"]
+[ext_resource type="Texture2D" uid="uid://b0ccrc48fe7gg" path="res://shared/tileset/textures/furnitures/9_Fishing_48x48.png" id="8_fyr22"]
+[ext_resource type="PackedScene" uid="uid://cu45kxwnynsi" path="res://shared/npc/npc.tscn" id="9_bkt6m"]
+[ext_resource type="Texture2D" uid="uid://cq5fht0ke45vi" path="res://entries/pond_room/char/sheet.png" id="11_hlm43"]
 [ext_resource type="PackedScene" path="res://shared/scene_portal/exit_portal.tscn" id="12_4bspq"]
-[ext_resource type="Script" path="res://shared/scene_portal/exit_portal.gd" id="13_3jkmc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2d5uq"]
 size = Vector2(1056, 96)
@@ -342,12 +340,8 @@ position = Vector2(528, 264)
 texture = SubResource("AtlasTexture_y2w1l")
 offset = Vector2(0, -72)
 
-[node name="RoomOwner" type="CharacterBody2D" parent="YSortParent" unique_id=820560495 instance=ExtResource("9_bkt6m")]
+[node name="RoomOwner" parent="YSortParent" unique_id=820560495 instance=ExtResource("9_bkt6m")]
 position = Vector2(360, 552)
-collision_layer = 4
-collision_mask = 2
-motion_mode = 1
-script = ExtResource("10_74tvt")
 sheet = ExtResource("11_hlm43")
 speed = 65.0
 dwell_time = 4.0
@@ -463,9 +457,6 @@ shape = SubResource("RectangleShape2D_e8r7s")
 [node name="EntryPoint" type="Marker2D" parent="." unique_id=1318431069 groups=["entry_point"]]
 position = Vector2(528, 624)
 
-[node name="ExitPortal" type="Area2D" parent="." unique_id=1103944674 instance=ExtResource("12_4bspq")]
+[node name="ExitPortal" parent="." unique_id=1103944674 instance=ExtResource("12_4bspq")]
 position = Vector2(528, 696)
-collision_layer = 0
-collision_mask = 2
-script = ExtResource("13_3jkmc")
 target_scene = "res://entries/pond_room/foyer.tscn"
