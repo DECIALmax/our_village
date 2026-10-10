@@ -7,6 +7,7 @@
 ##
 ## 交互是怎么串起来的：
 ##   玩家身上的 TalkArea（Area2D）只检测第 4 层 Interactable 上的 InteractiveComponent；
+##   这个检测区会跟着朝向往前挪（Talk Reach），所以站在别人背后是够不着的；
 ##   走进哪个组件的范围，哪个组件就成为交互目标（talk_target，多个时取最近的），
 ##   同时把玩家头顶的 TalkIcon 亮起来，告诉玩家「现在按 E 有反应」；
 ##   按 E 由玩家统一分发 —— try_interact() 是唯一的入口，别的地方不要再听 interact 键。
@@ -21,10 +22,26 @@ extends CharacterBody2D
 
 @export var speed: float = 170.0
 
+@export_group("交互")
+## 交互检测区往面朝方向前移多少像素。
+## 0 = 始终以自己为中心，跟朝向无关；越大越「只认眼前的东西」。
+@export var talk_reach: float = 32.0
+## 面朝左右时，交互区竖直方向再往下挪多少像素。
+## 侧身站着的时候「身前」比正面低一点，正对上下时不用挪（填正数 = 往下）。
+@export var talk_side_drop: float = 16.0
+## 面朝下时，交互区在「往前伸」的基础上再往下挪多少像素。
+## 朝下就是面向镜头，身前那块地方在脚下（填正数 = 往下）。
+@export var talk_down_drop: float = 16.0
+
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _talk_area: Area2D = $TalkArea
+@onready var _talk_shape: CollisionShape2D = $TalkArea/CollisionShape2D
 ## 头顶的交互提示（玩家自带的节点，可以没有）。
 @onready var _talk_icon: CanvasItem = get_node_or_null("TalkIcon")
+
+## 交互检测区在「还没转向」时的位置，开场从场景里读（player.tscn 里是 (0, -48)），
+## 之后按朝向在这个基础上往前挪。
+var _talk_base: Vector2 = Vector2.ZERO
 
 var _cs := CharacterSheet.new()
 var _anim := SheetAnimator.new(_cs)
@@ -34,6 +51,9 @@ var _targets: Array[InteractiveComponent] = []
 
 ## 当前交互目标：范围内离玩家最近的那个组件。等价于设计文档里的 talk_target。
 var talk_target: InteractiveComponent = null
+
+## 上次同步交互区位置时玩家的朝向，用来判断有没有转身。
+var _talk_dir: int = -1
 
 
 func _ready() -> void:
@@ -64,6 +84,9 @@ func _ready() -> void:
 		_talk_area.area_entered.connect(_on_talk_area_entered)
 	if not _talk_area.area_exited.is_connected(_on_talk_area_exited):
 		_talk_area.area_exited.connect(_on_talk_area_exited)
+
+	# 记下中立位置当基准，之后按朝向在这个基础上往前挪
+	_talk_base = _talk_shape.position
 
 	_anim.play("idle", CharacterSheet.DIR_DOWN)
 	_sync()
@@ -123,10 +146,10 @@ func _unhandled_input(event: InputEvent) -> void:
 ## 交互入口。返回 true 表示这次按 E 被玩家吃掉了。
 ##
 ## 优先级（以玩家的逻辑为准）：
-##   1. 对话框开着 → E 是「收起对话」，不再触发别的交互
+##   1. 对话框开着 → 第一次按 E 把台词补全，再按一次才收起，不触发别的交互
 ##   2. 范围内有可交互组件 → 交给离得最近的那个
 func try_interact() -> bool:
-	if GameShell.close_dialogue():
+	if GameShell.advance_dialogue():
 		return true
 	var target := resolve_target()
 	if target == null:
@@ -196,3 +219,27 @@ func _on_talk_area_exited(area: Area2D) -> void:
 
 func _sync() -> void:
 	_sprite.frame = _anim.index()
+	_sync_talk_area_direction()
+
+
+## 交互区跟着朝向走：面朝哪边就往前伸到哪边，站在背后够不着。
+##
+## 走路和原地转身都会经过这里（_sync 每帧都调），所以组件进出范围的信号是准的；
+## 挪动碰撞体之后，物理服务器会在下一个物理帧重新算重叠。
+func _sync_talk_area_direction() -> void:
+	if _anim.dir == _talk_dir:
+		return
+	_talk_dir = _anim.dir
+	_talk_shape.position = _talk_base + _direction_offset(clampi(_anim.dir, 0, 3))
+
+
+## 某个朝向相对中立位置的偏移。四个方向都在这里，想微调手感改这一个函数就够。
+func _direction_offset(dir: int) -> Vector2:
+	if dir == CharacterSheet.DIR_UP:
+		return Vector2(0.0, -talk_reach)
+	if dir == CharacterSheet.DIR_DOWN:
+		return Vector2(0.0, talk_reach + talk_down_drop)
+	if dir == CharacterSheet.DIR_LEFT:
+		return Vector2(-talk_reach, talk_side_drop)
+	# 右（也是兜底）
+	return Vector2(talk_reach, talk_side_drop)

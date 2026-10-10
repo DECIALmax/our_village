@@ -1,24 +1,21 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://dlck61c46ejfq"]
 
-[ext_resource type="Script" path="res://shared/dialogue/dialogue_ui.gd" id="1_ui"]
+[ext_resource type="Script" uid="uid://cnc2bvchqbg4s" path="res://shared/dialogue/dialogue_ui.gd" id="1_ui"]
+[ext_resource type="Texture2D" uid="uid://db22jggt1oevc" path="res://shared/textures/Modern_UI_Style_1_48x48.png" id="2_lcbkt"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_box"]
-bg_color = Color(0.09, 0.09, 0.12, 0.88)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.85, 0.75, 0.45, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_x75og"]
+texture = ExtResource("2_lcbkt")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 9.0
+texture_margin_bottom = 9.0
+region_rect = Rect2(36, 753, 72, 75)
 
-[node name="DialogueUI" type="CanvasLayer"]
+[node name="DialogueUI" type="CanvasLayer" unique_id=315354991]
 script = ExtResource("1_ui")
+chars_per_second = 20.0
 
-[node name="Panel" type="PanelContainer" parent="."]
-visible = false
+[node name="Panel" type="PanelContainer" parent="." unique_id=1771466928]
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
@@ -29,20 +26,21 @@ offset_right = -96.0
 offset_bottom = -48.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_box")
+theme_override_styles/panel = SubResource("StyleBoxTexture_x75og")
 
-[node name="Margin" type="MarginContainer" parent="Panel"]
+[node name="Margin" type="MarginContainer" parent="Panel" unique_id=1317921596]
+layout_mode = 2
 theme_override_constants/margin_left = 22
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 16
 
-[node name="Text" type="Label" parent="Panel/Margin"]
+[node name="Text" type="Label" parent="Panel/Margin" unique_id=1123878788]
+layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = ""
-autowrap_mode = 3
 vertical_alignment = 1
+autowrap_mode = 3
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=667705302]
 wait_time = 4.0
 one_shot = true

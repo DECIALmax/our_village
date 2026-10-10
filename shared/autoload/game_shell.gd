@@ -149,6 +149,21 @@ func close_dialogue() -> bool:
 	return _ui.close()
 
 
+## 对话开着的时候按交互键（E）该干什么，由玩家的 try_interact() 调过来：
+##   还在打字 → 把整句直接补全，对话框继续开着
+##   已经打完 → 收起来
+##   没开着   → 什么都不做，返回 false（这次按键可以去触发别的交互）
+##
+## 补全和收起是两次按 E，所以不会出现「手快按一下就把没看的台词跳过去」。
+func advance_dialogue() -> bool:
+	if not is_dialogue_open():
+		return false
+	if _ui.is_typing():
+		_ui.skip_typing()
+		return true
+	return close_dialogue()
+
+
 # ---------------------------------------------------------------- 对话转发
 
 ## 把场景里已有的 NPC 都接上。

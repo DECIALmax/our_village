@@ -137,13 +137,18 @@ func _check_dialogue_link(npc: Node) -> void:
 		_fail("_setup 之后找不到玩家")
 		return
 
-	npc.spoke.emit("冒烟测试台词")
-	await get_tree().process_frame
-
+	# 打字速度压到 1 字/秒：保证下面按 E 的时候台词还在打，
+	# 才能确定地测到「第一次补全、第二次收起」，不受机器快慢影响
 	var ui = GameShell.get("_ui")
 	if ui == null:
 		_fail("GameShell 没有对话框实例")
 		return
+	var keep_cps: float = ui.chars_per_second
+	ui.chars_per_second = 1.0
+
+	npc.spoke.emit("冒烟测试台词")
+	await get_tree().process_frame
+
 	var panel := ui.get_node_or_null("Panel") as CanvasItem
 	if panel == null or not panel.visible:
 		_fail("发了 spoke 但对话框没显示出来")
@@ -163,15 +168,27 @@ func _check_dialogue_link(npc: Node) -> void:
 		_fail("说话期间玩家还挪了 %.1f 像素，没被冻住" % drift)
 		return
 
-	# 再按一次 E 应该收起对话框（不是干等 hold_seconds 走完）
+	# 第一次按 E：台词还在打，应该先把整句补全，对话框继续开着
+	await _press_interact()
+	await get_tree().process_frame
+	if not panel.visible:
+		_fail("台词还没打完，按 E 就把对话框收了 —— 应该先把整句补全")
+		return
+	var text_node := ui.get_node_or_null("Panel/Margin/Text") as Label
+	if text_node != null and text_node.visible_characters != text_node.text.length():
+		_fail("按 E 没有把整句补全（%d/%d 字）"
+			% [text_node.visible_characters, text_node.text.length()])
+
+	# 第二次按 E 才收起对话框（不是干等 hold_seconds 走完）
 	await _press_interact()
 	await get_tree().process_frame
 	if panel.visible:
-		_fail("说话时再按 E 没能收起对话框")
+		_fail("补全之后再按 E 没能收起对话框")
 		return
 	if GameShell.is_busy():
 		_fail("对话框收了，GameShell 还是 busy —— 玩家会被永久卡住")
 		return
+	ui.chars_per_second = keep_cps
 
 	Input.action_press("move_right")
 	for i in 8:
@@ -256,8 +273,11 @@ func _check_interaction(scene: Node) -> void:
 
 	# NPC 会自己走开，测的时候先让它站住
 	npc.set("_dwell_left", 999.0)
-	player.global_position = npc.global_position + Vector2(0, 40)
+	# 站到 NPC 下方 60 像素，并明确面朝 NPC（在上方）——
+	# 不要沿用前面用例留下的朝向，否则「面朝上才够得着」这个前提是碰运气来的
+	player.global_position = npc.global_position + Vector2(0, 60)
 	player.velocity = Vector2.ZERO
+	player.get("_anim").play("idle", CharacterSheet.DIR_UP)
 	for i in 8:
 		await get_tree().physics_frame
 
@@ -269,8 +289,16 @@ func _check_interaction(scene: Node) -> void:
 	if icon != null and not icon.visible:
 		_fail("玩家进了可交互范围，头顶的 TalkIcon 没亮")
 
+	await _check_talk_area_follows_facing(player, comp, talk, icon)
+
 	_spoke_count = 0
 	npc.spoke.connect(_count_spoke)
+
+	# 打字速度压到 1 字/秒：保证按完 E 之后台词还在打，
+	# 这样「第一次补全、第二次收起」是确定能测到的，不受机器快慢影响。
+	var ui = _dialogue_ui()
+	var keep_cps: float = ui.chars_per_second
+	ui.chars_per_second = 1.0
 
 	# 按 E：应该是 NPC 说话
 	await _press_interact()
@@ -286,15 +314,28 @@ func _check_interaction(scene: Node) -> void:
 	if icon != null and icon.visible:
 		_fail("对话框开着的时候 TalkIcon 还亮着（这时按 E 是收框，不是搭话）")
 
-	# 对话开着再按 E：只收框，不能再触发一次 NPC
+	# 第一次按 E：台词还在打，应该先补全，既不能收框也不能再触发 NPC
+	await _press_interact()
+	await get_tree().process_frame
+	if _spoke_count != 1:
+		_fail("台词还在打的时候按 E 又触发了 NPC（共 %d 次）—— interact 键没被玩家独占" % _spoke_count)
+	if not _panel_visible():
+		_fail("台词还没打完，按 E 就把对话框收了 —— 应该先把整句补全")
+	var label_now := _dialogue_label()
+	if label_now != null and label_now.visible_characters != label_now.text.length():
+		_fail("按 E 没有把整句补全（%d/%d 字）"
+			% [label_now.visible_characters, label_now.text.length()])
+
+	# 第二次按 E：这次才收框
 	await _press_interact()
 	await get_tree().process_frame
 	if _spoke_count != 1:
 		_fail("对话框开着再按 E 又触发了 NPC（共 %d 次）—— interact 键没被玩家独占" % _spoke_count)
 	if _panel_visible():
-		_fail("对话框开着再按 E 没能收起来")
+		_fail("补全之后再按 E 没能收起对话框")
 	if GameShell.is_busy():
 		_fail("对话收了，GameShell 还是 busy —— 玩家会被永久卡住")
+	ui.chars_per_second = keep_cps
 	await _settle_physics()
 	if icon != null and not icon.visible:
 		_fail("对话收起来之后玩家还在可交互范围里，TalkIcon 没亮回来")
@@ -319,13 +360,18 @@ func _check_interaction(scene: Node) -> void:
 	await _check_placeable_prop(scene, player)
 
 	if _fails.size() == fails_before:
-		print("  交互链路正常：TalkArea 认目标、按 E 触发、对话开着时 E 只收框、走开撤提示")
+		print("  交互链路正常：TalkArea 认目标、按 E 触发、打字时先补全再收框、走开撤提示")
 
 
 ## 用法 B：参与者不写代码，只把 interactive_component.tscn 摆下去、在检查器里填属性。
 func _check_placeable_prop(scene: Node, player: VillagePlayer) -> void:
-	# 玩家 TalkArea 是 64x64、挂在 (0,-48)，组件要摆在玩家附近的这几个偏移里才重叠得上
-	var prop := _spawn_prop(scene, player.global_position + Vector2(0, -16), "冒烟测试：这是一块告示牌。")
+	# 组件要摆在玩家当前的交互区里。交互区会跟着朝向挪，
+	# 所以直接问碰撞体现在在哪，别自己按「玩家位置 ± 固定偏移」猜。
+	var center := _talk_area_center(player)
+	if center == Vector2.ZERO:
+		_fail("拿不到玩家交互区的位置")
+		return
+	var prop := _spawn_prop(scene, center, "冒烟测试：这是一块告示牌。")
 	if prop == null:
 		_fail("load 不到或实例化不了 shared/interaction/interactive_component.tscn")
 		return
@@ -347,11 +393,11 @@ func _check_placeable_prop(scene: Node, player: VillagePlayer) -> void:
 		_fail("跟告示牌按 E 之后对话框没弹出来")
 	elif label.text != prop.say_text:
 		_fail("告示牌台词不对：对话框显示的是「%s」" % label.text)
-	await _press_interact()
-	await get_tree().process_frame
+	# 这里只是收场，不测按键路径，直接调 API 收干净
+	await _dismiss_dialogue()
 
 	# 范围内有两个时，按 E 要打到离玩家最近的那个
-	var far := _spawn_prop(scene, player.global_position + Vector2(48, -16), "冒烟测试：远的那块。")
+	var far := _spawn_prop(scene, center + Vector2(48, 0), "冒烟测试：远的那块。")
 	if far != null:
 		for i in 8:
 			await get_tree().physics_frame
@@ -371,8 +417,7 @@ func _check_placeable_prop(scene: Node, player: VillagePlayer) -> void:
 	await get_tree().process_frame
 	if label != null and label.text != "告示牌：正文":
 		_fail("GameShell.say 的说话人前缀不对：「%s」" % label.text)
-	await _press_interact()
-	await get_tree().process_frame
+	await _dismiss_dialogue()
 
 	# 组件中途被释放，玩家身上不能留渣
 	prop.queue_free()
@@ -382,6 +427,7 @@ func _check_placeable_prop(scene: Node, player: VillagePlayer) -> void:
 		_fail("告示牌被删掉之后玩家身上还挂着交互目标：%s" % str(player.talk_target))
 
 	await _check_action_branches(scene, player)
+	await _check_typewriter()
 
 
 func _spawn_prop(scene: Node, at: Vector2, text: String) -> InteractiveComponent:
@@ -425,6 +471,85 @@ func _check_action_branches(scene: Node, player: VillagePlayer) -> void:
 	await get_tree().physics_frame
 
 
+## 交互检测区要跟着朝向走：面朝 NPC 时够得着，背对着就该够不着。
+##
+## 玩家被摆在 NPC 下方 60 像素，正好卡在「转个身就出范围」的位置：
+## 交互区 64 高、NPC 的组件 96 高，面朝上时重叠 52 像素，面朝下时差 12 像素够不到。
+func _check_talk_area_follows_facing(player: VillagePlayer, comp: InteractiveComponent,
+		talk: Area2D, icon: CanvasItem) -> void:
+	var shape := talk.get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if shape == null:
+		_fail("玩家 TalkArea 下面没有 CollisionShape2D，没法跟朝向走")
+		return
+	var anim = player.get("_anim")
+	if anim == null:
+		_fail("拿不到玩家的动画播放器，没法测转向")
+		return
+	# 中立位置、伸出距离、两个下移量都从玩家身上读，免得测试自己另写一套符号约定
+	var base: Vector2 = player.get("_talk_base")
+	var reach: float = player.talk_reach
+	var side_drop: float = player.talk_side_drop
+	var down_drop: float = player.talk_down_drop
+
+	# 背对 NPC（玩家在 NPC 下方，朝下 = 背对）
+	anim.play("idle", CharacterSheet.DIR_DOWN)
+	await _wait_physics(4)
+	var want_down := base + Vector2(0, reach + down_drop)
+	if not shape.position.is_equal_approx(want_down):
+		_fail("玩家朝下时交互区位置不对：%s，应该是 %s" % [shape.position, want_down])
+	if down_drop > 0.0 and shape.position.y <= base.y + reach:
+		_fail("Talk Down Drop 填的是正数，交互区没有继续往下（y=%.1f，只算 Reach 应该是 y=%.1f）"
+			% [shape.position.y, base.y + reach])
+	if player.talk_target != null:
+		_fail("玩家背对着 NPC，却还把 NPC 当成交互目标 —— 交互区没跟朝向走")
+	if icon != null and icon.visible:
+		_fail("玩家背对 NPC 时头顶 TalkIcon 还亮着")
+
+	# 转回面朝 NPC（玩家在下方，朝上 = 面向 NPC）
+	anim.play("idle", CharacterSheet.DIR_UP)
+	await _wait_physics(4)
+	var want_up := base + Vector2(0, -reach)
+	if not shape.position.is_equal_approx(want_up):
+		_fail("玩家朝上时交互区位置不对：%s，应该是 %s" % [shape.position, want_up])
+	if player.talk_target != comp:
+		_fail("玩家转回面向 NPC 之后，交互目标没回来（现在：%s）" % str(player.talk_target))
+	if icon != null and not icon.visible:
+		_fail("玩家转回面向 NPC 之后，头顶 TalkIcon 没亮回来")
+
+	# 左右也要跟着挪，而且填了正数就必须是往下（正数=往下，见 player.gd 的注释）
+	anim.play("idle", CharacterSheet.DIR_RIGHT)
+	await _wait_physics(4)
+	var want_right := base + Vector2(reach, side_drop)
+	if not shape.position.is_equal_approx(want_right):
+		_fail("玩家朝右时交互区位置不对：%s，应该是 %s" % [shape.position, want_right])
+	if side_drop > 0.0 and shape.position.y <= base.y:
+		_fail("Talk Side Drop 填的是正数，交互区却往上挪了（y=%.1f，中立位置 y=%.1f）"
+			% [shape.position.y, base.y])
+	anim.play("idle", CharacterSheet.DIR_LEFT)
+	await _wait_physics(4)
+	var want_left := base + Vector2(-reach, side_drop)
+	if not shape.position.is_equal_approx(want_left):
+		_fail("玩家朝左时交互区位置不对：%s，应该是 %s" % [shape.position, want_left])
+	if side_drop > 0.0 and shape.position.y <= base.y:
+		_fail("Talk Side Drop 填的是正数，交互区却往上挪了（y=%.1f，中立位置 y=%.1f）"
+			% [shape.position.y, base.y])
+	# 最后转回面朝 NPC，后面接着测按键
+	anim.play("idle", CharacterSheet.DIR_UP)
+	await _wait_physics(4)
+
+
+## 等 n 个物理帧。挪碰撞体之后重叠是下一个物理帧才重算的，等少了会读到旧状态。
+func _wait_physics(n: int) -> void:
+	for i in n:
+		await get_tree().physics_frame
+
+
+## 玩家当前交互检测区（碰撞体）的中心，世界坐标。
+func _talk_area_center(player: VillagePlayer) -> Vector2:
+	var shape := player.get_node_or_null("TalkArea/CollisionShape2D") as CollisionShape2D
+	return shape.global_position if shape != null else Vector2.ZERO
+
+
 func _count_spoke(_text: String) -> void:
 	_spoke_count += 1
 
@@ -437,15 +562,82 @@ func _settle_physics() -> void:
 	await get_tree().physics_frame
 
 
+## 收场用：直接把对话框收掉。
+## 这里不走按键 —— 打字机开着的时候按一次 E 只是补全，要按两次才收，
+## 而且第二次还有可能顺手触发一次交互，测别的用例时不想引入这些变量。
+func _dismiss_dialogue() -> void:
+	GameShell.close_dialogue()
+	await get_tree().process_frame
+
+
+## 打字机效果：刚弹出来不能整句都在，字要一个个冒出来，速度跟 Chars Per Second 对得上；
+## 而且停留计时必须等整句打完才开始，否则长台词会被提前收走。
+##
+## 速度不写死在断言里：测试自己先把速度设成已知值再量，
+## 这样以后调 dialogue_ui.tscn 上的默认速度，不用回来改测试。
+func _check_typewriter() -> void:
+	var ui = _dialogue_ui()
+	if ui == null:
+		return
+	var timer := ui.get_node_or_null("Timer") as Timer
+	var keep: float = ui.chars_per_second
+
+	# 台词要够长：下面按 5 字/秒量 2 秒（约 10 个字），句子太短会先打完
+	ui.chars_per_second = 5.0
+	GameShell.say("打字机速度测试，这句话故意写长一点，才好量出每秒冒几个字。")
+	await get_tree().process_frame
+
+	var label := _dialogue_label()
+	if label == null or not _panel_visible():
+		_fail("打字机测试：对话框没弹出来")
+		ui.chars_per_second = keep
+		return
+	var total := label.text.length()
+
+	if label.visible_characters >= total:
+		_fail("对话框刚弹出来就整句显示了 —— 打字机效果没生效")
+	if timer != null and not timer.is_stopped():
+		_fail("台词还没打完，停留计时就已经在跑 —— 长台词会被提前收走")
+
+	# 5 字/秒 × 2 秒 ≈ 10 个字
+	await get_tree().create_timer(2.0).timeout
+	var shown: int = label.visible_characters
+	if shown <= 0:
+		_fail("等了 2 秒，对话框一个字都没冒出来")
+	elif shown >= total:
+		_fail("2 秒就把整句（%d 个字）打完了，比每秒 5 个快得多" % total)
+	elif shown < 6 or shown > 14:
+		_fail("按每秒 5 个字算，2 秒该冒出 10 个左右，实际冒出 %d 个" % shown)
+
+	# 调快速度：确认打得完，而且打完才开始数停留时间
+	ui.chars_per_second = 2000.0
+	await get_tree().create_timer(0.2).timeout
+	if label.visible_characters != total:
+		_fail("打字机没有把整句打完（%d/%d 字）" % [label.visible_characters, total])
+	if not ui.is_open():
+		_fail("台词还没打完，对话框就自己收了")
+	if timer != null and timer.is_stopped():
+		_fail("整句打完之后没有开始数停留时间，对话框永远不会自己收")
+
+	# 收掉，别影响后面的用例
+	await _press_interact()
+	await get_tree().process_frame
+	ui.chars_per_second = keep
+
+
+func _dialogue_ui():
+	return GameShell.get("_ui")
+
+
 func _dialogue_label() -> Label:
-	var ui = GameShell.get("_ui")
+	var ui = _dialogue_ui()
 	if ui == null:
 		return null
 	return ui.get_node_or_null("Panel/Margin/Text") as Label
 
 
 func _panel_visible() -> bool:
-	var ui = GameShell.get("_ui")
+	var ui = _dialogue_ui()
 	if ui == null:
 		return false
 	var panel := ui.get_node_or_null("Panel") as CanvasItem
