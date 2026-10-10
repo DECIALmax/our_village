@@ -27,8 +27,8 @@ shared/tileset/
 ├── furniture_tileset.tres   ← 家具瓦片集，刷家具用这个
 ├── nav_tileset.tres         ← 导航层用，见下面第 6 步
 └── textures/
-    ├── furnitures/          ← 27 张 48×48 家具贴图，tileset 已配好引用
-    └── room-builder/        ← 房间构建贴图（地板、墙、拱门）
+	├── furnitures/          ← 27 张 48×48 家具贴图，tileset 已配好引用
+	└── room-builder/        ← 房间构建贴图（地板、墙、拱门）
 ```
 
 clone 下来就能直接用，不需要再下载或解压任何东西。
@@ -57,7 +57,7 @@ clone 下来就能直接用，不需要再下载或解压任何东西。
    `shared/scene_portal/exit_portal.tscn` 拖进场景，在检查器里填好
 8. 按 <kbd>F5</kbd> 试跑，满意了就提 PR
 
-> 每一步的硬性要求都在 [`SPEC.md`](SPEC.md) 里，条款编号 H-1 ~ H-18。
+> 每一步的硬性要求都在 [`SPEC.md`](SPEC.md) 里，条款编号 H-1 ~ H-19。
 > 被退回时会直接告诉你违反了哪一条。
 
 ---
@@ -67,7 +67,7 @@ clone 下来就能直接用，不需要再下载或解压任何东西。
 | 按键 | 作用 |
 | --- | --- |
 | <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / 方向键 | 走路 |
-| <kbd>E</kbd> / <kbd>Enter</kbd> | 跟身边的角色说话；说着的时候再按一次收起 |
+| <kbd>E</kbd> / <kbd>Enter</kbd> | 跟身边的角色说话、触发可交互区域；说着的时候再按一次收起 |
 
 ---
 
@@ -82,6 +82,7 @@ shared/             共享代码，不要改
   npc/              角色壳子 npc.tscn —— 拖进场景填两个属性就能用
   player/           共享玩家，引擎自动生成，你不用管
   scene_portal/     出口 exit_portal.tscn —— 走进去就切场景
+  interaction/      可交互组件 interactive_component.tscn —— 摆下去，玩家按 E 就有反应
   dialogue/         对话表解析 + 对话框 UI
   tileset/          瓦片集：room.tres（地板墙）+ furniture_tileset.tres（家具）+ nav_tileset.tres（导航）
   autoload/         GameShell：生成玩家、转发对话
@@ -104,6 +105,13 @@ tools/              主办方的脚本，你一般用不到
 
 录屏或评审时想固定时间，改 `shared/autoload/game_shell.gd` 上的
 `time_override`（比如填 `"22:30"`），留空就是用系统真实时间。
+
+**想让某个地方按 <kbd>E</kbd> 有反应，用可交互组件。**
+把 `shared/interaction/interactive_component.tscn` 拖进你的场景、摆在那个位置，
+在检查器里选 `Action`：`SAY` 说一句话，`CHANGE_SCENE` 换个场景，`EMIT` 只发信号。
+想写脚本的（商店、机关）照抄 NPC 的做法：实现 `player_interact`，组件放在它下面就会转发过去。
+**别在自己的脚本里再去听 E 键** —— 交互键只归玩家一个人管，
+你在自己脚本里再听一遍，同一次按 E 会被响应两次。细节见 SPEC.md 的 5.7（H-19）。
 
 **导航瓦片是半透明的青色格子。**
 刷在 `NavLayer` 上，编辑器里看得见方便你对齐，

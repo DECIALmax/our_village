@@ -7,6 +7,12 @@
 ##
 ## 角色不会响应方向键，它会自己寻路在巡游点之间走动。
 ## 玩家靠近后按交互键（默认 E）触发对话。
+##
+## 按键不在这里听：NPC 身上挂着一个 InteractiveComponent（第 4 层 Interactable），
+## 玩家的 TalkArea 检测到它之后，按 E 会回调到下面的 player_interact。
+## 这样「谁在响应 E」只有玩家一个人，不会出现 NPC 和对话框抢同一次按键。
+## 非共享代码请照抄这个套路：实现 player_interact / enter_interact / exit_interact，
+## 不要自己写 _unhandled_input 去听 interact。
 
 class_name VillageNpc
 extends CharacterBody2D
@@ -34,7 +40,6 @@ signal spoke(text: String)
 
 @onready var _sprite: Sprite2D = $Sprite
 @onready var _agent: NavigationAgent2D = $NavigationAgent2D
-@onready var _interact_area: Area2D = $InteractArea
 
 var _cs := CharacterSheet.new()
 var _anim := SheetAnimator.new(_cs)
@@ -68,11 +73,6 @@ func _ready() -> void:
 	_load_dialogue()
 	_anim.play("idle", CharacterSheet.DIR_DOWN)
 	_sync_sprite()
-
-	if not _interact_area.body_entered.is_connected(_on_body_entered):
-		_interact_area.body_entered.connect(_on_body_entered)
-	if not _interact_area.body_exited.is_connected(_on_body_exited):
-		_interact_area.body_exited.connect(_on_body_exited)
 
 
 # ---------------------------------------------------------------- 巡游
@@ -168,31 +168,53 @@ func _load_dialogue() -> void:
 	_dialogue = DialogueSet.load_from_json(path)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not _player_in_range:
-		return
-	if not event.is_action_pressed("interact"):
-		return
+# ---------------------------------------------------------------- 交互
+#
+# 下面三个方法由玩家调用：玩家的 TalkArea 检测到 NPC 身上的 InteractiveComponent，
+# 按 E（player_interact）或进出范围（enter_interact / exit_interact）时回调过来。
+# NPC 自己不听按键 —— 按键只归玩家管。
+
+## 玩家按 E：挑一句台词说出去，并停下来面向玩家。
+func player_interact(player: Node2D) -> void:
 	if _dialogue == null:
 		return
 	var line := _dialogue.pick_now()
-	print(180, line)
 	if line == null:
 		return
-	print(line.text)
-	get_viewport().set_input_as_handled()
 
 	# 说话时停下来面向玩家
 	velocity = Vector2.ZERO
 	_dwell_left = maxf(_dwell_left, 1.5)
-	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player != null:
-		_anim.face_vector(global_position.direction_to(player.global_position))
-	# face_vector 可能把朝向换到这个动作不支持的方向，play 自己会挑一个支持的
-	_anim.play(_anim.anim, _anim.dir)
-	_sync_sprite()
+	_face(player)
 
 	spoke.emit(_wrap(line))
+
+
+## 玩家走进交互范围。站着不动的时候顺手转个身，让人看得出「它注意到你了」。
+func enter_interact(player: Node2D) -> void:
+	_player_in_range = true
+	if _waypoints.is_empty() or _dwell_left > 0.0:
+		_face(player)
+
+
+## 玩家走出交互范围。
+func exit_interact(_player: Node2D) -> void:
+	_player_in_range = false
+
+
+## 玩家现在在不在交互范围内。
+func is_player_in_range() -> bool:
+	return _player_in_range
+
+
+## 转身面向某个节点。face_vector 可能把朝向换到这个动作不支持的方向，
+## play 自己会挑一个支持的。
+func _face(target: Node2D) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	_anim.face_vector(global_position.direction_to(target.global_position))
+	_anim.play(_anim.anim, _anim.dir)
+	_sync_sprite()
 
 
 func _wrap(line: DialogueSet.Line) -> String:
@@ -221,13 +243,3 @@ func _entry_dir() -> String:
 	elif not scene_file_path.is_empty():
 		scene_path = scene_file_path
 	return scene_path.get_base_dir()
-
-
-func _on_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		_player_in_range = true
-
-
-func _on_body_exited(body: Node2D) -> void:
-	if body.is_in_group("player"):
-		_player_in_range = false

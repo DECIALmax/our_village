@@ -2,9 +2,13 @@
 
 [ext_resource type="Script" uid="uid://ccyhygbygixf6" path="res://shared/player/player.gd" id="1_player"]
 [ext_resource type="Texture2D" uid="uid://djtwhg0jnn4q5" path="res://shared/player/player.png" id="2_ejjm8"]
+[ext_resource type="Texture2D" uid="uid://db22jggt1oevc" path="res://shared/textures/Modern_UI_Style_1_48x48.png" id="3_7r5ry"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
 size = Vector2(28, 18)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_talk"]
+size = Vector2(64, 64)
 
 [node name="Player" type="CharacterBody2D" unique_id=226121368 groups=["player"]]
 collision_layer = 2
@@ -15,6 +19,7 @@ sheet = ExtResource("2_ejjm8")
 
 [node name="Sprite" type="Sprite2D" parent="." unique_id=133304726]
 texture_filter = 1
+texture = ExtResource("2_ejjm8")
 offset = Vector2(0, -48)
 hframes = 56
 vframes = 20
@@ -26,3 +31,30 @@ shape = SubResource("RectangleShape2D_player")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1745000875]
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
+
+[node name="TalkArea" type="Area2D" parent="." unique_id=1955449448]
+collision_layer = 0
+collision_mask = 8
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TalkArea" unique_id=936121058]
+position = Vector2(0, -48)
+shape = SubResource("RectangleShape2D_talk")
+
+[node name="TalkIcon" type="Node2D" parent="." unique_id=1136402410]
+visible = false
+position = Vector2(0, -100)
+
+[node name="Sprite2D" type="Sprite2D" parent="TalkIcon" unique_id=1091849794]
+position = Vector2(0, 15)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("3_7r5ry")
+region_enabled = true
+region_rect = Rect2(1392, 576, 48, 48)
+
+[node name="Label" type="Label" parent="TalkIcon" unique_id=782742581]
+offset_left = -5.0
+offset_top = 3.0
+offset_right = 35.0
+offset_bottom = 26.0
+text = "E"

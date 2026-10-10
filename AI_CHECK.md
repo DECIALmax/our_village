@@ -4,7 +4,7 @@
 
 AI 需要能读到两样东西：
 
-1. `SPEC.md`（规范原文，条款编号 H-1 ~ H-18）
+1. `SPEC.md`（规范原文，条款编号 H-1 ~ H-19）
 2. 你的文件夹
 
 ---
@@ -13,7 +13,7 @@ AI 需要能读到两样东西：
 
 ```text
 你是这个 Godot 活动项目的提交审核员。请按仓库根目录的 SPEC.md
-逐条核对我的提交，规范条款编号是 H-1 ~ H-18。
+逐条核对我的提交，规范条款编号是 H-1 ~ H-19。
 
 我的提交在 entries/<把这里改成你的目录名>/ 。
 
@@ -68,8 +68,14 @@ python tools/inspect_sheet.py entries/你的目录/char/sheet.png
 场景能不能跑、角色会不会寻路，主办方在合入前会统一跑：
 
 ```bash
+# 刚 clone 下来、还没用编辑器打开过的话，先导入一次
+godot --headless --path . --import
 godot --headless --path . --quit-after 3000 res://tools/smoke_test.tscn
 ```
+
+`--import` 那一步只需要跑一次：脚本里的 `class_name`（CharacterSheet、VillageNpc、InteractiveComponent 这些）
+要靠引擎扫过一遍文件才能互相认出来。用编辑器打开过项目的话就已经扫过了，可以直接跑第二行。
+跳过这一步的话，`--headless` 会报一堆 `Identifier "CharacterSheet" not declared` —— 那不是脚本写错了。
 
 `--quit-after` 是保险：万一脚本中途出错没走到退出那一步，
 没有它进程会一直挂着，而 Windows 上挂着的 Godot 一个字都不会往外打 ——

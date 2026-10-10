@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://shared/interaction/interactive_component.gd" id="1_inter"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_interact"]
+size = Vector2(64, 64)
+
+[node name="InteractiveComponent" type="Area2D"]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("1_inter")
+prompt_text = "按 E"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_interact")
+
+[node name="Prompt" type="Label" parent="."]
+visible = false
+offset_left = -70.0
+offset_top = -104.0
+offset_right = 70.0
+offset_bottom = -72.0
+theme_override_colors/font_color = Color(1, 0.941176, 0.717647, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 18
+text = "按 E"
+horizontal_alignment = 1

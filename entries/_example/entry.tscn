@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://shared/scene_portal/exit_portal.tscn" id="2_x75og"]
 [ext_resource type="PackedScene" uid="uid://cu45kxwnynsi" path="res://shared/npc/npc.tscn" id="4_ekabs"]
 [ext_resource type="Texture2D" uid="uid://bbs0213g1kgmi" path="res://entries/_example/char/sheet.png" id="6_dartw"]
+[ext_resource type="Script" uid="uid://sr51oslydaqf" path="res://shared/interaction/interactive_component.gd" id="7_x75og"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yhiv7"]
 size = Vector2(1152, 92)
@@ -24,6 +25,12 @@ size = Vector2(48, 528)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lpkuq"]
 size = Vector2(39, 528)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3rsjw"]
+size = Vector2(190, 52)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wj5ab"]
+size = Vector2(54, 52)
 
 [node name="Entry" type="Node2D" unique_id=1867363339]
 metadata/_edit_horizontal_guides_ = [866.0]
@@ -68,6 +75,7 @@ tile_map_data = PackedByteArray("AAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAA
 tile_set = ExtResource("1_22tvf")
 
 [node name="Walls" type="StaticBody2D" parent="." unique_id=1063712883]
+visible = false
 
 [node name="@CollisionShape2D@2" type="CollisionShape2D" parent="Walls" unique_id=1646218964]
 position = Vector2(576, 46)
@@ -94,6 +102,7 @@ position = Vector2(1127.5, 272)
 shape = SubResource("RectangleShape2D_lpkuq")
 
 [node name="ObjectCollicsions" type="StaticBody2D" parent="." unique_id=1713206878]
+visible = false
 collision_layer = 8
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="ObjectCollicsions" unique_id=670316953]
@@ -139,3 +148,37 @@ position = Vector2(519, 208)
 
 [node name="Waypoint5" type="Marker2D" parent="Npc" unique_id=565552402]
 position = Vector2(523, -15)
+
+[node name="InteractiveObjects" type="Node2D" parent="." unique_id=971393763]
+
+[node name="InteractiveComponent" type="Area2D" parent="InteractiveObjects" unique_id=1061401240]
+position = Vector2(356, 98)
+script = ExtResource("7_x75og")
+action = 1
+say_text = "这里摆放了很多书。《通关！游戏设计之道》、《DX11龙书》、《代码整洁之道》... ...
+等等，这是什么？《高血压病的预防保健和治疗》？"
+metadata/_custom_type_script = "uid://sr51oslydaqf"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractiveObjects/InteractiveComponent" unique_id=1268694469]
+position = Vector2(54, 19)
+shape = SubResource("RectangleShape2D_3rsjw")
+
+[node name="InteractiveComponent2" type="Area2D" parent="InteractiveObjects" unique_id=1970274759]
+position = Vector2(792, 143)
+script = ExtResource("7_x75og")
+action = 1
+say_text = "最喜欢的毛绒玩具"
+metadata/_custom_type_script = "uid://sr51oslydaqf"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractiveObjects/InteractiveComponent2" unique_id=1427138912]
+shape = SubResource("RectangleShape2D_wj5ab")
+
+[node name="InteractiveComponent3" type="Area2D" parent="InteractiveObjects" unique_id=405330222]
+position = Vector2(1053, 125)
+script = ExtResource("7_x75og")
+action = 1
+say_text = "全都是格子衬衫，嗯，很符合逻辑。"
+metadata/_custom_type_script = "uid://sr51oslydaqf"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractiveObjects/InteractiveComponent3" unique_id=404314774]
+shape = SubResource("RectangleShape2D_wj5ab")
