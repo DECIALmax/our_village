@@ -242,7 +242,7 @@ python tools/inspect_sheet.py entries/你的目录/char/sheet.png
 
 ---
 
-## 5. 场景 `entry.tscn`（H-13 ~ H-18）
+## 5. 场景 `entry.tscn`（H-13 ~ H-19）
 
 ### 5.1 必须有的东西（H-13）
 
@@ -334,7 +334,12 @@ python tools/inspect_sheet.py entries/你的目录/char/sheet.png
 - 巡游点的坐标在开场读一次，之后 NPC 走动不会带着它们跑，放心摆。
 
 **玩家靠近后按 E 就能对话**，不用写任何代码。
-说完会自动收起（默认 4 秒），也可以再按一次 E 提前关掉；对话期间玩家不能走动。
+文字是打字机效果（每秒几个字由 `dialogue_ui.tscn` 上的 `Chars Per Second` 控制，默认 20），
+整句打完之后再停留 4 秒自动收起；不想等的话：**按一次 E 先把整句补全，再按一次才收起**。
+对话期间玩家不能走动。
+
+**交互要面向对方**：玩家身上的交互检测区会跟着朝向往前伸，所以站在别人背后是够不着的，
+得先转向他。你的角色和可交互组件都摆得离玩家常走的路近一点，别让人找角度。
 
 ### 5.6 不要自己写的东西（H-18）
 
@@ -344,6 +349,47 @@ python tools/inspect_sheet.py entries/你的目录/char/sheet.png
 - 不要自己写玩家节点 —— 引擎会自动生成
 - 不要自己写对话框 UI —— 共享的 `dialogue_ui.tscn` 已经在用了
 - 不要改 NPC 和出口的脚本 —— 它们是共享代码
+- 不要自己监听 `interact` 键 —— 交互键归玩家管，见 5.7（H-19）
+
+### 5.7 可交互区域：站在旁边按 E（H-19）
+
+除了 NPC 对话，你还可以让场景里某些位置「玩家站在旁边按 <kbd>E</kbd> 有反应」——
+一口井、一块告示牌、一扇要按 E 才开的门。
+
+把 `shared/interaction/interactive_component.tscn` 拖进你的场景，摆在希望玩家能按 E 的位置，
+然后在检查器里选 `Action`：
+
+| `Action` | 效果 | 还要填 |
+| --- | --- | --- |
+| `SAY`（说话） | 用共享对话框说一句 | `Say Text` 必填；`Say Speaker` 选填，填了会显示成「说话人：台词」 |
+| `CHANGE_SCENE`（切换场景） | 切到你自己的另一个场景 | `Target Scene`，只能填你自己目录下的 `.tscn` |
+| `EMIT`（发信号） | 只发 `interacted` 信号，给写了脚本的人接 | —— |
+| `FORWARD`（转发，默认） | 把交互转发给别的节点 | 把组件放到那个节点下面，或把 `Agent` 指向它 |
+
+- `Prompt Text`：玩家走近时头顶显示的文字，默认「按 E」；留空则不显示提示。
+- `Enabled`：关掉之后这个区域对玩家不可见、按 E 也不响应。
+- 组件会自己设好碰撞层（第 4 层 `Interactable`），**不要手改它的 `Collision Layer` / `Collision Mask`**。
+
+**如果你的对象要写脚本**（商店、要记状态的机关之类），照抄 NPC 的做法：
+脚本里实现下面任意方法，组件放在它下面就会自动转发过去。
+
+```gdscript
+func player_interact(player: Node2D) -> void:   # 玩家按 E
+func enter_interact(player: Node2D) -> void:    # 玩家走近
+func exit_interact(player: Node2D) -> void:     # 玩家走开
+```
+
+要显示台词就调 `GameShell.say("台词", "说话人")`。
+
+**必须遵守（H-19）**：
+
+1. **不要在你自己写的脚本里监听 `interact` 键。** 不要写
+   `_unhandled_input` 去判断 `event.is_action_pressed("interact")`。
+   交互键只归玩家一个人管：玩家身上带着检测第 4 层的 `TalkArea`，
+   走进范围后才把这次按键转发到你的对象。你自己再听一遍，
+   同一次按 E 就会被响应两次（对话一闪就没、或者一句话说两遍）。
+2. 可交互组件只能放在你自己的场景里，不要动 `shared/interaction/` 里的代码。
+3. `Target Scene` 只能填你自己目录下的 `.tscn`，和 5.4 的出口一条规矩。
 
 ---
 

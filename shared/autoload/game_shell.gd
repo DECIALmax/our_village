@@ -2,8 +2,11 @@
 ##
 ## 它是 autoload（单例），负责三件事，群友一行代码都不用写：
 ##   1. 在 entry_point 位置生成玩家
-##   2. 把 NPC 说的话送到共享对话框
+##   2. 把 NPC 说的话送到共享对话框（谁想说话都可以调 say()）
 ##   3. 场景里找不到导航层时提醒一句
+##
+## 对话框的开和关也归它管：NPC / 可交互组件只负责「说什么」，
+## 「什么时候收起」由玩家按 E 决定 —— 玩家调 close_dialogue()。
 ##
 ## 导航网格不用谁去烘焙：NavLayer 上刷了导航瓦片之后，引擎会自己把它
 ## 注册进场景的导航地图。群友只需要在自己的 entry.tscn 里放一个 Marker2D
@@ -124,6 +127,43 @@ func is_busy() -> bool:
 	return _busy
 
 
+# ---------------------------------------------------------------- 对话框
+
+## 说一句话。NPC 通过 spoke 信号走到这里；可交互组件的「说话」也是走这里。
+## speaker 非空时会在前面加上「说话人：」。
+func say(text: String, speaker: String = "") -> void:
+	_ensure_ui()
+	_ui.show_line(text if speaker.is_empty() else "%s：%s" % [speaker, text])
+
+
+## 对话框现在开着吗。
+func is_dialogue_open() -> bool:
+	return _ui != null and is_instance_valid(_ui) and _ui.is_open()
+
+
+## 收起对话框。玩家按 E 时调它 —— 返回 true 表示这次按键确实收掉了一个对话框，
+## 玩家会把这个按键吃掉，不再触发别的交互。
+func close_dialogue() -> bool:
+	if not is_dialogue_open():
+		return false
+	return _ui.close()
+
+
+## 对话开着的时候按交互键（E）该干什么，由玩家的 try_interact() 调过来：
+##   还在打字 → 把整句直接补全，对话框继续开着
+##   已经打完 → 收起来
+##   没开着   → 什么都不做，返回 false（这次按键可以去触发别的交互）
+##
+## 补全和收起是两次按 E，所以不会出现「手快按一下就把没看的台词跳过去」。
+func advance_dialogue() -> bool:
+	if not is_dialogue_open():
+		return false
+	if _ui.is_typing():
+		_ui.skip_typing()
+		return true
+	return close_dialogue()
+
+
 # ---------------------------------------------------------------- 对话转发
 
 ## 把场景里已有的 NPC 都接上。
@@ -149,8 +189,7 @@ func _on_node_added(node: Node) -> void:
 
 
 func _on_npc_spoke(text: String) -> void:
-	_ensure_ui()
-	_ui.show_line(text)
+	say(text)
 
 
 # ---------------------------------------------------------------- 工具

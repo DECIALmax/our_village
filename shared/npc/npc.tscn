@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cu45kxwnynsi"]
 
 [ext_resource type="Script" uid="uid://b7hwdkyv7ugol" path="res://shared/npc/npc.gd" id="1_npc"]
+[ext_resource type="Script" uid="uid://sr51oslydaqf" path="res://shared/interaction/interactive_component.gd" id="2_inter"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(28, 18)
@@ -29,10 +30,27 @@ path_postprocessing = 1
 avoidance_enabled = true
 debug_enabled = true
 
-[node name="InteractArea" type="Area2D" parent="." unique_id=1972773893]
-collision_layer = 0
-collision_mask = 2
+[node name="InteractiveComponent" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+monitorable = true
+script = ExtResource("2_inter")
+prompt_text = "按 E 交谈"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractArea" unique_id=1336417494]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractiveComponent"]
 position = Vector2(0, -48)
 shape = SubResource("RectangleShape2D_interact")
+
+[node name="Prompt" type="Label" parent="InteractiveComponent"]
+visible = false
+offset_left = -60.0
+offset_top = -140.0
+offset_right = 60.0
+offset_bottom = -112.0
+theme_override_colors/font_color = Color(1, 0.941176, 0.717647, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 18
+text = "按 E 交谈"
+horizontal_alignment = 1
