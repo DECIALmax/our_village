@@ -1,0 +1,46 @@
+[gd_resource type="TileSet" format=3 uid="uid://43nx1ltnirmj"]
+
+[ext_resource type="Texture2D" uid="uid://ccpvy2s6qfbyg" path="res://shared/tileset/textures/room-builder/Room_Builder_Walls_48x48.png" id="walls"]
+
+[sub_resource type="TileSetAtlasSource" id="WallModules"]
+texture = ExtResource("walls")
+texture_region_size = Vector2i(24, 24)
+0:12/0 = 0
+1:12/0 = 0
+2:12/0 = 0
+3:12/0 = 0
+4:12/0 = 0
+5:12/0 = 0
+0:13/0 = 0
+1:13/0 = 0
+2:13/0 = 0
+3:13/0 = 0
+4:13/0 = 0
+5:13/0 = 0
+0:14/0 = 0
+1:14/0 = 0
+2:14/0 = 0
+3:14/0 = 0
+4:14/0 = 0
+5:14/0 = 0
+0:15/0 = 0
+1:15/0 = 0
+2:15/0 = 0
+3:15/0 = 0
+4:15/0 = 0
+5:15/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="WallCap"]
+texture = ExtResource("walls")
+texture_region_size = Vector2i(24, 18)
+0:16/0 = 0
+0:16/0/texture_origin = Vector2i(0, 3)
+2:16/0 = 0
+2:16/0/texture_origin = Vector2i(0, 3)
+5:16/0 = 0
+5:16/0/texture_origin = Vector2i(0, 3)
+
+[resource]
+tile_size = Vector2i(24, 24)
+sources/0 = SubResource("WallModules")
+sources/1 = SubResource("WallCap")
