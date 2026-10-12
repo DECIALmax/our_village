@@ -444,6 +444,9 @@ script = ExtResource("resident_script")
 sheet = ExtResource("sheet")
 dialogue_json = "res://entries/valar/dialogue.json"
 
+[node name="InteractiveComponent" parent="Resident" index="3"]
+prompt_text = ""
+
 [node name="InteractPrompt" type="Label" parent="Resident" unique_id=10998136]
 visible = false
 z_index = 3
