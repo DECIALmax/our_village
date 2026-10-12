@@ -1,0 +1,138 @@
+[gd_scene format=4]
+
+[ext_resource type="TileSet" path="res://shared/tileset/nav_tileset.tres" id="1_1xshg"]
+[ext_resource type="TileSet" path="res://shared/tileset/room.tres" id="2_hnnwv"]
+[ext_resource type="Texture2D" path="res://shared/tileset/textures/furnitures/2_LivingRoom_48x48.png" id="3_0aq7y"]
+[ext_resource type="PackedScene" path="res://shared/scene_portal/exit_portal.tscn" id="4_7dqtd"]
+[ext_resource type="Script" path="res://shared/scene_portal/exit_portal.gd" id="5_78ihd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sghc5"]
+size = Vector2(576, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2hfqk"]
+size = Vector2(576, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sw4gs"]
+size = Vector2(48, 480)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0h3u4"]
+size = Vector2(48, 480)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1rnyb"]
+atlas = ExtResource("3_0aq7y")
+region = Rect2(96, 336, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b30hw"]
+atlas = ExtResource("3_0aq7y")
+region = Rect2(480, 0, 96, 144)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ku3qj"]
+size = Vector2(96, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_k6kma"]
+size = Vector2(48, 36)
+
+[node name="GardenFoyer" type="Node2D" unique_id=470401340]
+texture_filter = 1
+
+[node name="NavLayer" type="TileMapLayer" parent="." unique_id=407103648]
+tile_map_data = PackedByteArray("AAABAAIAAAAAAAAAAAABAAMAAAAAAAAAAAABAAQAAAAAAAAAAAABAAUAAAAAAAAAAAABAAYAAAAAAAAAAAABAAcAAAAAAAAAAAABAAgAAAAAAAAAAAACAAIAAAAAAAAAAAACAAMAAAAAAAAAAAACAAQAAAAAAAAAAAACAAUAAAAAAAAAAAACAAYAAAAAAAAAAAACAAcAAAAAAAAAAAACAAgAAAAAAAAAAAADAAIAAAAAAAAAAAADAAUAAAAAAAAAAAADAAYAAAAAAAAAAAADAAcAAAAAAAAAAAADAAgAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAUAAAAAAAAAAAAEAAYAAAAAAAAAAAAEAAcAAAAAAAAAAAAEAAgAAAAAAAAAAAAFAAIAAAAAAAAAAAAFAAMAAAAAAAAAAAAFAAQAAAAAAAAAAAAFAAUAAAAAAAAAAAAFAAYAAAAAAAAAAAAFAAcAAAAAAAAAAAAFAAgAAAAAAAAAAAAGAAIAAAAAAAAAAAAGAAMAAAAAAAAAAAAGAAQAAAAAAAAAAAAGAAUAAAAAAAAAAAAGAAYAAAAAAAAAAAAGAAcAAAAAAAAAAAAGAAgAAAAAAAAAAAAHAAIAAAAAAAAAAAAHAAMAAAAAAAAAAAAHAAQAAAAAAAAAAAAHAAUAAAAAAAAAAAAHAAYAAAAAAAAAAAAHAAcAAAAAAAAAAAAHAAgAAAAAAAAAAAAIAAIAAAAAAAAAAAAIAAMAAAAAAAAAAAAIAAUAAAAAAAAAAAAIAAYAAAAAAAAAAAAIAAcAAAAAAAAAAAAIAAgAAAAAAAAAAAAJAAIAAAAAAAAAAAAJAAMAAAAAAAAAAAAJAAQAAAAAAAAAAAAJAAUAAAAAAAAAAAAJAAYAAAAAAAAAAAAJAAcAAAAAAAAAAAAJAAgAAAAAAAAAAAAKAAIAAAAAAAAAAAAKAAMAAAAAAAAAAAAKAAQAAAAAAAAAAAAKAAUAAAAAAAAAAAAKAAYAAAAAAAAAAAAKAAcAAAAAAAAAAAAKAAgAAAAAAAAAAAA=")
+tile_set = ExtResource("1_1xshg")
+
+[node name="RoomOutline" type="Polygon2D" parent="." unique_id=1947144966]
+color = Color(0.20784314, 0.29411766, 0.28235295, 1)
+polygon = PackedVector2Array(0, 0, 576, 0, 576, 480, 0, 480)
+
+[node name="RoomFloor" type="TileMapLayer" parent="." unique_id=1622845829]
+tile_map_data = PackedByteArray("AAABAAIAAQAFAAwAAAABAAMAAQAFAAwAAAABAAQAAQAFAAwAAAABAAUAAQAFAAwAAAABAAYAAQAFAAwAAAABAAcAAQAFAAwAAAABAAgAAQAFAAwAAAACAAIAAQAGAAwAAAACAAMAAQAGAAwAAAACAAQAAQAGAAwAAAACAAUAAQAGAAwAAAACAAYAAQAGAAwAAAACAAcAAQAGAAwAAAACAAgAAQAGAAwAAAADAAIAAQAEAAwAAAADAAMAAQAEAAwAAAADAAQAAQAEAAwAAAADAAUAAQAEAAwAAAADAAYAAQAEAAwAAAADAAcAAQAEAAwAAAADAAgAAQAEAAwAAAAEAAIAAQAFAAwAAAAEAAMAAQAFAAwAAAAEAAQAAQAFAAwAAAAEAAUAAQAFAAwAAAAEAAYAAQAFAAwAAAAEAAcAAQAFAAwAAAAEAAgAAQAFAAwAAAAFAAIAAQAGAAwAAAAFAAMAAQAGAAwAAAAFAAQAAQAGAAwAAAAFAAUAAQAGAAwAAAAFAAYAAQAGAAwAAAAFAAcAAQAGAAwAAAAFAAgAAQAGAAwAAAAGAAIAAQAEAAwAAAAGAAMAAQAEAAwAAAAGAAQAAQAEAAwAAAAGAAUAAQAEAAwAAAAGAAYAAQAEAAwAAAAGAAcAAQAEAAwAAAAGAAgAAQAEAAwAAAAHAAIAAQAFAAwAAAAHAAMAAQAFAAwAAAAHAAQAAQAFAAwAAAAHAAUAAQAFAAwAAAAHAAYAAQAFAAwAAAAHAAcAAQAFAAwAAAAHAAgAAQAFAAwAAAAIAAIAAQAGAAwAAAAIAAMAAQAGAAwAAAAIAAQAAQAGAAwAAAAIAAUAAQAGAAwAAAAIAAYAAQAGAAwAAAAIAAcAAQAGAAwAAAAIAAgAAQAGAAwAAAAJAAIAAQAEAAwAAAAJAAMAAQAEAAwAAAAJAAQAAQAEAAwAAAAJAAUAAQAEAAwAAAAJAAYAAQAEAAwAAAAJAAcAAQAEAAwAAAAJAAgAAQAEAAwAAAAKAAIAAQAFAAwAAAAKAAMAAQAFAAwAAAAKAAQAAQAFAAwAAAAKAAUAAQAFAAwAAAAKAAYAAQAFAAwAAAAKAAcAAQAFAAwAAAAKAAgAAQAFAAwAAAA=")
+tile_set = ExtResource("2_hnnwv")
+
+[node name="RoomWallBack" type="TileMapLayer" parent="." unique_id=2793568]
+tile_map_data = PackedByteArray("AAABAAAAAwAAAAYAAAABAAEAAwAAAAcAAAACAAAAAwABAAYAAAACAAEAAwABAAcAAAADAAAAAwABAAYAAAADAAEAAwABAAcAAAAEAAAAAwABAAYAAAAEAAEAAwABAAcAAAAFAAAAAwABAAYAAAAFAAEAAwABAAcAAAAGAAAAAwABAAYAAAAGAAEAAwABAAcAAAAHAAAAAwABAAYAAAAHAAEAAwABAAcAAAAIAAAAAwABAAYAAAAIAAEAAwABAAcAAAAJAAAAAwABAAYAAAAJAAEAAwABAAcAAAAKAAAAAwACAAYAAAAKAAEAAwACAAcAAAA=")
+tile_set = ExtResource("2_hnnwv")
+
+[node name="LeftWallCap" type="Polygon2D" parent="." unique_id=992410477]
+position = Vector2(24, 0)
+color = Color(0.32156864, 0.42745098, 0.38039216, 1)
+polygon = PackedVector2Array(0, 0, 24, 0, 24, 480, 0, 480)
+
+[node name="RightWallCap" type="Polygon2D" parent="." unique_id=593963072]
+position = Vector2(528, 0)
+color = Color(0.32156864, 0.42745098, 0.38039216, 1)
+polygon = PackedVector2Array(0, 0, 24, 0, 24, 480, 0, 480)
+
+[node name="FrontWallTrim" type="Polygon2D" parent="." unique_id=2019712897]
+position = Vector2(24, 432)
+color = Color(0.7921569, 0.69803923, 0.53333336, 1)
+polygon = PackedVector2Array(0, 0, 528, 0, 528, 12, 0, 12)
+
+[node name="WallNorth" type="StaticBody2D" parent="." unique_id=1843908933]
+
+[node name="@CollisionShape2D@22" type="CollisionShape2D" parent="WallNorth" unique_id=353663992]
+position = Vector2(288, 48)
+shape = SubResource("RectangleShape2D_sghc5")
+
+[node name="WallSouth" type="StaticBody2D" parent="." unique_id=875174713]
+
+[node name="@CollisionShape2D@23" type="CollisionShape2D" parent="WallSouth" unique_id=1793512361]
+position = Vector2(288, 456)
+shape = SubResource("RectangleShape2D_2hfqk")
+
+[node name="WallWest" type="StaticBody2D" parent="." unique_id=1092720273]
+
+[node name="@CollisionShape2D@24" type="CollisionShape2D" parent="WallWest" unique_id=1512365815]
+position = Vector2(24, 240)
+shape = SubResource("RectangleShape2D_sw4gs")
+
+[node name="WallEast" type="StaticBody2D" parent="." unique_id=494202734]
+
+[node name="@CollisionShape2D@25" type="CollisionShape2D" parent="WallEast" unique_id=1352768175]
+position = Vector2(552, 240)
+shape = SubResource("RectangleShape2D_0h3u4")
+
+[node name="FloorDecor" type="Node2D" parent="." unique_id=2036811276]
+
+[node name="EntryMat" type="Polygon2D" parent="FloorDecor" unique_id=736962495]
+position = Vector2(96, 312)
+color = Color(0.45490196, 0.6039216, 0.5294118, 1)
+polygon = PackedVector2Array(0, 0, 96, 0, 96, 72, 0, 72)
+
+[node name="DoorMat" type="Polygon2D" parent="FloorDecor" unique_id=1405223701]
+position = Vector2(396, 312)
+color = Color(0.35686275, 0.54509807, 0.50980395, 1)
+polygon = PackedVector2Array(0, 0, 72, 0, 72, 36, 0, 36)
+
+[node name="YSortParent" type="Node2D" parent="." unique_id=127885565]
+y_sort_enabled = true
+
+[node name="GardenBench" type="Sprite2D" parent="YSortParent" unique_id=114296736]
+position = Vector2(192, 208)
+texture = SubResource("AtlasTexture_1rnyb")
+offset = Vector2(0, -48)
+
+[node name="WelcomePlant" type="Sprite2D" parent="YSortParent" unique_id=149942897]
+position = Vector2(408, 240)
+texture = SubResource("AtlasTexture_b30hw")
+offset = Vector2(0, -72)
+
+[node name="BenchBody" type="StaticBody2D" parent="." unique_id=1336495843]
+
+[node name="@CollisionShape2D@26" type="CollisionShape2D" parent="BenchBody" unique_id=1390872488]
+position = Vector2(192, 188)
+shape = SubResource("RectangleShape2D_ku3qj")
+
+[node name="PlantPot" type="StaticBody2D" parent="." unique_id=1397663823]
+
+[node name="@CollisionShape2D@27" type="CollisionShape2D" parent="PlantPot" unique_id=714035456]
+position = Vector2(408, 222)
+shape = SubResource("RectangleShape2D_k6kma")
+
+[node name="EntryPoint" type="Marker2D" parent="." unique_id=111935665 groups=["entry_point"]]
+position = Vector2(144, 336)
+
+[node name="ExitPortal" type="Area2D" parent="." unique_id=437556933 instance=ExtResource("4_7dqtd")]
+position = Vector2(432, 336)
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("5_78ihd")
+target_scene = "res://entries/pond_room/entry.tscn"
