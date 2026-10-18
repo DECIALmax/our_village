@@ -1,0 +1,13 @@
+{
+  "lines": [
+	{"id": "morning",   "text": "早起困一天！",     "start": "06:00", "end": "09:00", "weight": 1},
+	{"id": "forenoon",  "text": "有什么新的委托吗？", "start": "09:00", "end": "12:00", "weight": 1},
+	{"id": "noon",      "text": "就算是做饭也要拿出拯救世界的气势！",       "start": "12:00", "end": "13:30", "weight": 1},
+	{"id": "afternoon", "text": "好想接任务啊……",         "start": "13:30", "end": "18:00", "weight": 1},
+	{"id": "evening",   "text": "没错，主角总是很忙的。让我们一起加班！",     "start": "18:00", "end": "22:00", "weight": 1},
+	{"id": "night",     "text": "现在还不能休息哦勇者！GODOT TIME~!",   "start": "22:00",                   "weight": 1},
+	{"id": "any1",       "text": "我是蛙蛙世界的唯一主角——闪闪！",                            "weight": 1},
+	{"id": "any2",       "text": "欢迎你，勇者！随便逛逛吧~",                             "weight": 1},
+	{"id": "any3",       "text": "无聊的话，架子上有游戏可以玩哦~",                             "weight": 1}
+  ]
+}
