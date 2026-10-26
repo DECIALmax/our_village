@@ -1,0 +1,11 @@
+{
+  "lines": [
+	{"id": "morning",   "text": "早，你不会才准备睡觉吧。",     "start": "06:00", "end": "09:00", "weight": 3},
+	{"id": "forenoon",  "text": "睡眠时间，正在睡眠室内。", "start": "09:00", "end": "12:00", "weight": 2},
+	{"id": "noon",      "text": "午饭时间，该吃点什么好呢",       "start": "12:00", "end": "13:30", "weight": 5},
+	{"id": "afternoon", "text": "中午吃饱了，下午该干点什么呢",         "start": "13:30", "end": "18:00", "weight": 2},
+	{"id": "evening",   "text": "该死，今晚又要加班。",     "start": "18:00", "end": "22:00", "weight": 3},
+	{"id": "night",     "text": "夜晚，真正属于我的时间。",   "start": "22:00",                   "weight": 4},
+	{"id": "any",       "text": "happy everyday",                             "weight": 1}
+  ]
+}
