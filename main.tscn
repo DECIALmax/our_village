@@ -1,0 +1,200 @@
+[gd_scene format=3 uid="uid://bgv4x4q8iufch"]
+
+[ext_resource type="Script" uid="uid://5brsk2bqj6u6" path="res://main.gd" id="1_main"]
+
+[sub_resource type="Gradient" id="Gradient_ig7tw"]
+offsets = PackedFloat32Array(0.521197, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_ig7tw"]
+gradient = SubResource("Gradient_ig7tw")
+
+[sub_resource type="Curve" id="Curve_ig7tw"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_d5xr0"]
+curve = SubResource("Curve_ig7tw")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_3rsjw"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 200.0
+orbit_velocity_min = -0.34399992
+orbit_velocity_max = 9.49949e-08
+radial_velocity_min = -50.000023
+radial_velocity_max = -50.000023
+gravity = Vector3(0, 0, 0)
+radial_accel_min = -2.2351742e-06
+radial_accel_max = 41.719997
+scale_min = 2.0
+scale_max = 3.0
+scale_curve = SubResource("CurveTexture_d5xr0")
+color_ramp = SubResource("GradientTexture1D_ig7tw")
+
+[sub_resource type="Gradient" id="Gradient_0xm2m"]
+offsets = PackedFloat32Array(0, 0.5662921)
+colors = PackedColorArray(1, 1, 1, 0.45882353, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_3rsjw"]
+gradient = SubResource("Gradient_0xm2m")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 1)
+
+[sub_resource type="RectangleShape2D" id="EntranceShape"]
+size = Vector2(30, 30)
+
+[sub_resource type="LabelSettings" id="LabelSettings_g68vp"]
+
+[sub_resource type="StyleBoxFlat" id="PickerStyle"]
+bg_color = Color(0.075, 0.075, 0.085, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.45, 0.45, 0.5, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="VillageHub" type="Node2D" unique_id=1619938002 groups=["village_hub"]]
+script = ExtResource("1_main")
+metadata/_edit_vertical_guides_ = [577.0]
+
+[node name="Background" type="CanvasLayer" parent="." unique_id=1719487847]
+layer = -10
+
+[node name="Black" type="ColorRect" parent="Background" unique_id=1679221620]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.05490196, 0, 0.12941177, 1)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1553162964]
+anchor_mode = 0
+
+[node name="EntryPoint" type="Marker2D" parent="." unique_id=1492935017 groups=["entry_point"]]
+position = Vector2(577, 481)
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=695354914]
+position = Vector2(577, 309)
+amount = 1000
+lifetime = 2.0
+preprocess = 1.0
+process_material = SubResource("ParticleProcessMaterial_3rsjw")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=214857039]
+position = Vector2(577, 308)
+scale = Vector2(2, 2)
+texture = SubResource("GradientTexture2D_3rsjw")
+
+[node name="HouseEntrance" type="Area2D" parent="." unique_id=1527589147]
+visible = false
+position = Vector2(554, 308)
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HouseEntrance" unique_id=394961509]
+shape = SubResource("EntranceShape")
+
+[node name="Square" type="Line2D" parent="HouseEntrance" unique_id=37996437]
+visible = false
+points = PackedVector2Array(-15, -15, 15, -15, 15, 15, -15, 15)
+closed = true
+width = 2.0
+
+[node name="Label" type="Label" parent="HouseEntrance" unique_id=1619828081]
+visible = false
+offset_left = -120.0
+offset_top = -55.0
+offset_right = 120.0
+offset_bottom = -25.0
+theme_override_font_sizes/font_size = 18
+text = "选择小屋"
+horizontal_alignment = 1
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=798443797]
+layer = 5
+
+[node name="Hint" type="Label" parent="UI" unique_id=1220967970]
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 28.0
+offset_bottom = 58.0
+theme_override_colors/font_color = Color(0.7, 0.7, 0.72, 1)
+theme_override_font_sizes/font_size = 18
+text = "Godot新手村
+传送门入口"
+label_settings = SubResource("LabelSettings_g68vp")
+horizontal_alignment = 1
+
+[node name="HousePicker" type="Control" parent="UI" unique_id=2058001109]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="UI/HousePicker" unique_id=1796850731]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="UI/HousePicker" unique_id=2126457267]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -220.0
+offset_right = 210.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("PickerStyle")
+
+[node name="Margin" type="MarginContainer" parent="UI/HousePicker/Panel" unique_id=1511670660]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Contents" type="VBoxContainer" parent="UI/HousePicker/Panel/Margin" unique_id=657920632]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="UI/HousePicker/Panel/Margin/Contents" unique_id=731325843]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "去谁的小屋坐坐？"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="UI/HousePicker/Panel/Margin/Contents" unique_id=431931923]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="HouseButtons" type="VBoxContainer" parent="UI/HousePicker/Panel/Margin/Contents/Scroll" unique_id=2006747820]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Close" type="Button" parent="UI/HousePicker/Panel/Margin/Contents" unique_id=2088105050]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "返回 · Esc"

@@ -7,6 +7,16 @@
 - **交之前自查** → 用 [`AI_CHECK.md`](AI_CHECK.md) 里的那段话让 AI 帮你查
 - **想看范例** → [`entries/_example/`](entries/_example)
 
+按 F6 运行作品入口可以单独调试自己的小屋；按 F5 从 `main.tscn` 进入村庄。
+首次进入时按 E 读完四句欢迎词，再用 WASD / 方向键移动。
+走进屏幕中央的 30×30 方框会打开小屋选择窗口，点击按钮进入，Esc 取消。
+小屋列表自动读取 `entries/` 下含 `entry.tscn` 的目录，排除以下划线开头的示例目录；
+按钮名称优先使用 `meta.json` 的 `name`，未填写时使用 `author`，最后使用目录名。
+从村庄进入后，作品入口场景中的出口统一返回村庄，欢迎词在本次运行中不再重复。
+单独运行作品时，出口仍使用作者配置的目标场景。
+
+主场景流程检查：`godot --headless --path . --quit-after 3000 res://tools/smoke_test_hub.tscn`。
+
 ---
 
 ## 五分钟上手

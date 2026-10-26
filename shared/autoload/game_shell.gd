@@ -16,6 +16,16 @@ extends Node
 
 const PLAYER_SCENE := preload("res://shared/player/player.tscn")
 const DIALOGUE_UI_SCENE := preload("res://shared/dialogue/dialogue_ui.tscn")
+const HUB_SCENE := "res://main.tscn"
+
+signal dialogue_sequence_finished
+
+## 仅在本次运行中记录；从小屋回来不再播放欢迎词。
+var hub_intro_seen: bool = false
+var active_house_entry: String = ""
+var _dialogue_queue: Array[String] = []
+var _sequence_playing: bool = false
+var _control_locks: Dictionary = {}
 
 ## 调试用：把游戏内时间固定在 HH:MM，例如 "22:30"。
 ## 留空则使用系统真实时间。评审时改这个值就能看 NPC 在不同时段说什么。
@@ -65,9 +75,24 @@ func _setup() -> void:
 	if scene == null:
 		return
 	_ensure_ui()
-	_warn_if_no_navmesh(scene)
+	_control_locks.clear()
+	if not scene.is_in_group("village_hub"):
+		_warn_if_no_navmesh(scene)
 	_connect_npcs(scene)
 	_spawn_player(scene)
+	if scene.scene_file_path == active_house_entry:
+		_enable_house_exits(scene)
+	if scene.has_method("configure_player"):
+		scene.configure_player(_player)
+
+
+## 部分作品提交时暂时关掉了出口；接入村庄后恢复现有出口检测。
+func _enable_house_exits(node: Node) -> void:
+	if node is ExitPortal:
+		node.collision_mask = 2
+		node.monitoring = true
+	for child in node.get_children():
+		_enable_house_exits(child)
 
 
 ## 导航网格是引擎自己从 NavLayer 上收集的，这里只在找不到导航层时提醒一句。
@@ -94,13 +119,14 @@ func _spawn_player(scene: Node) -> void:
 	if _player != null and is_instance_valid(_player):
 		_player.queue_free()
 	_player = PLAYER_SCENE.instantiate()
-	scene.add_child(_player)
 	var entry := get_tree().get_first_node_in_group("entry_point") as Node2D
 	if entry != null:
-		_player.global_position = entry.global_position
+		# 先进树再定位会让物理检测短暂把玩家当作站在原点，误触中央区域。
+		_player.position = scene.to_local(entry.global_position) if scene is Node2D else entry.global_position
 	else:
 		push_warning("[管家] 场景 %s 里没有 entry_point 组的节点，玩家从原点出现。"
 			% scene.name)
+	scene.add_child(_player)
 
 
 func _ensure_ui() -> void:
@@ -119,12 +145,60 @@ func _on_dialogue_opened() -> void:
 
 
 func _on_dialogue_closed() -> void:
+	if not _dialogue_queue.is_empty():
+		_ui.show_line(_dialogue_queue.pop_front())
+		return
 	_busy = false
+	if _sequence_playing:
+		_sequence_playing = false
+		_ui.auto_close = true
+		dialogue_sequence_finished.emit()
 
 
 ## 玩家每帧调用：正在说话就返回 true，这时候不该响应方向键。
 func is_busy() -> bool:
-	return _busy
+	for id in _control_locks.keys():
+		var owner_node: Node = _control_locks[id].get_ref()
+		if owner_node == null or not owner_node.is_inside_tree():
+			_control_locks.erase(id)
+	return _busy or not _control_locks.is_empty()
+
+
+## 弹出选择窗口时锁住移动；用弱引用防止切场景后留下锁。
+func set_controls_locked(owner_node: Node, locked: bool) -> void:
+	var id := owner_node.get_instance_id()
+	if locked:
+		_control_locks[id] = weakref(owner_node)
+	else:
+		_control_locks.erase(id)
+
+
+func play_dialogue_sequence(lines: Array[String]) -> void:
+	if lines.is_empty() or _sequence_playing:
+		return
+	_ensure_ui()
+	_dialogue_queue.assign(lines)
+	_sequence_playing = true
+	_ui.auto_close = false
+	_ui.show_line(_dialogue_queue.pop_front())
+
+
+func enter_house(scene_path: String) -> Error:
+	var previous := active_house_entry
+	active_house_entry = scene_path
+	var result := get_tree().change_scene_to_file(scene_path)
+	if result != OK:
+		active_house_entry = previous
+	return result
+
+
+## 主入口的出口视为离开小屋；其它房间仍按作者配置跳转。
+func resolve_exit_target(configured_target: String) -> String:
+	var scene := get_tree().current_scene
+	if not active_house_entry.is_empty() and scene != null:
+		if scene.scene_file_path == active_house_entry or configured_target.is_empty():
+			return HUB_SCENE
+	return configured_target
 
 
 # ---------------------------------------------------------------- 对话框
