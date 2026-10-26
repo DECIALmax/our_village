@@ -26,13 +26,20 @@ func _ready() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if _busy or not body.is_in_group("player"):
 		return
-	if target_scene.is_empty():
+	var destination := GameShell.resolve_exit_target(target_scene)
+	if destination.is_empty():
 		push_warning("[出口] %s 没有设置 Target Scene，玩家走进去不会有反应。" % name)
 		return
-	if not FileAccess.file_exists(target_scene):
-		push_error("[出口] 找不到目标场景：%s" % target_scene)
+	if not ResourceLoader.exists(destination):
+		push_error("[出口] 找不到目标场景：%s" % destination)
 		return
 	_busy = true
-	get_tree().change_scene_to_file(target_scene)
-	await get_tree().process_frame
-	_busy = false
+	_change_scene.call_deferred(destination)
+
+
+## body_entered 在物理回调里发出，切场景必须延后；切换后不再访问旧节点。
+func _change_scene(destination: String) -> void:
+	var result := get_tree().change_scene_to_file(destination)
+	if result != OK:
+		_busy = false
+		push_error("[出口] 切换场景失败：%s（%s）" % [destination, error_string(result)])

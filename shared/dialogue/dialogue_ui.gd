@@ -21,6 +21,9 @@ signal closed
 ## 整句打完之后停留几秒，然后再自动收起。
 @export var hold_seconds: float = 4.0
 
+## 引导对话要由玩家读完后确认，普通 NPC 对话仍自动收起。
+var auto_close: bool = true
+
 ## 打字机速度：每秒显示几个字。填 0 或负数 = 不打字，整句直接出来。
 ##
 ## 想调节奏就改 dialogue_ui.tscn 上 DialogueUI 节点的 Chars Per Second（检查器里就能改），
@@ -86,7 +89,8 @@ func _finish_typing() -> void:
 	_typing = false
 	set_process(false)
 	_label.visible_characters = _total
-	_timer.start(hold_seconds)
+	if auto_close:
+		_timer.start(hold_seconds)
 
 
 ## 现在还在打字吗。
